@@ -7,5 +7,8 @@ export function greet(name?: string, shout = false): string {
 }
 
 if (import.meta.main) {
-  console.log(greet(process.argv[2]));
+  const args = process.argv.slice(2);
+  const shout = args.includes("--shout");
+  const name = args.find((arg) => arg !== "--shout");
+  console.log(greet(name, shout));
 }
