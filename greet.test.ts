@@ -17,3 +17,11 @@ test("treats an empty or whitespace-only name as no name", () => {
   expect(greet("")).toBe("Hello, world!");
   expect(greet("   ")).toBe("Hello, world!");
 });
+
+test("shouts the greeting for a given name", () => {
+  expect(greet("Daud", true)).toBe("HELLO, DAUD!");
+});
+
+test("shouts the world fallback when no name is given", () => {
+  expect(greet(undefined, true)).toBe("HELLO, WORLD!");
+});

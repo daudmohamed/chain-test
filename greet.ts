@@ -1,8 +1,9 @@
 #!/usr/bin/env bun
 
-export function greet(name?: string): string {
+export function greet(name?: string, shout = false): string {
   const trimmed = name?.trim();
-  return `Hello, ${trimmed ? trimmed : "world"}!`;
+  const greeting = `Hello, ${trimmed ? trimmed : "world"}!`;
+  return shout ? greeting.toUpperCase() : greeting;
 }
 
 if (import.meta.main) {
