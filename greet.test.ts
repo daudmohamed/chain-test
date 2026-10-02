@@ -114,25 +114,107 @@ test("parseTimes throws for non-numeric strings", () => {
 async function run(args: string[]) {
   const proc = Bun.spawn([process.execPath, "greet.ts", ...args], {
     stdout: "pipe",
+    stderr: "pipe",
     cwd: import.meta.dir,
   });
   const out = await new Response(proc.stdout).text();
+  const err = await new Response(proc.stderr).text();
   const code = await proc.exited;
-  return { out, code };
+  return { out, err, code };
 }
 
 test("CLI: name then --shout", async () => {
-  expect(await run(["Daud", "--shout"])).toEqual({ out: "HELLO, DAUD!\n", code: 0 });
+  expect(await run(["Daud", "--shout"])).toEqual({ out: "HELLO, DAUD!\n", err: "", code: 0 });
 });
 
 test("CLI: --shout then name", async () => {
-  expect(await run(["--shout", "Daud"])).toEqual({ out: "HELLO, DAUD!\n", code: 0 });
+  expect(await run(["--shout", "Daud"])).toEqual({ out: "HELLO, DAUD!\n", err: "", code: 0 });
 });
 
 test("CLI: --shout alone", async () => {
-  expect(await run(["--shout"])).toEqual({ out: "HELLO, WORLD!\n", code: 0 });
+  expect(await run(["--shout"])).toEqual({ out: "HELLO, WORLD!\n", err: "", code: 0 });
 });
 
 test("CLI: no flag", async () => {
-  expect(await run(["Alice"])).toEqual({ out: "Hello, Alice!\n", code: 0 });
+  expect(await run(["Alice"])).toEqual({ out: "Hello, Alice!\n", err: "", code: 0 });
+});
+
+test("CLI: --times prints the greeting N times, one per line", async () => {
+  expect(await run(["--times", "3", "Daud"])).toEqual({
+    out: "Hello, Daud!\nHello, Daud!\nHello, Daud!\n",
+    err: "",
+    code: 0,
+  });
+});
+
+test("CLI: --times 1 reproduces the single-line output", async () => {
+  expect(await run(["--times", "1", "Alice"])).toEqual({
+    out: "Hello, Alice!\n",
+    err: "",
+    code: 0,
+  });
+});
+
+test("CLI: --times with --shout (flag first)", async () => {
+  expect(await run(["--shout", "--times", "2", "Daud"])).toEqual({
+    out: "HELLO, DAUD!\nHELLO, DAUD!\n",
+    err: "",
+    code: 0,
+  });
+});
+
+test("CLI: --times with --shout (shout first)", async () => {
+  expect(await run(["Daud", "--times", "2", "--shout"])).toEqual({
+    out: "HELLO, DAUD!\nHELLO, DAUD!\n",
+    err: "",
+    code: 0,
+  });
+});
+
+test("CLI: --times with no value prints error and exits 1", async () => {
+  expect(await run(["Daud", "--times"])).toEqual({
+    out: "",
+    err: "error: --times must be a whole number from 1 to 10\n",
+    code: 1,
+  });
+});
+
+test("CLI: --times 0 prints error and exits 1", async () => {
+  expect(await run(["--times", "0"])).toEqual({
+    out: "",
+    err: "error: --times must be a whole number from 1 to 10\n",
+    code: 1,
+  });
+});
+
+test("CLI: --times -1 prints error and exits 1", async () => {
+  expect(await run(["--times", "-1"])).toEqual({
+    out: "",
+    err: "error: --times must be a whole number from 1 to 10\n",
+    code: 1,
+  });
+});
+
+test("CLI: --times 11 prints error and exits 1", async () => {
+  expect(await run(["--times", "11"])).toEqual({
+    out: "",
+    err: "error: --times must be a whole number from 1 to 10\n",
+    code: 1,
+  });
+});
+
+test("CLI: --times abc prints error and exits 1", async () => {
+  expect(await run(["--times", "abc"])).toEqual({
+    out: "",
+    err: "error: --times must be a whole number from 1 to 10\n",
+    code: 1,
+  });
+});
+
+test("CLI: --times 2.5 prints error and exits 1", async () => {
+  expect(await run(["--times", "2.5"])).toEqual({
+    out: "",
+    err: "error: --times must be a whole number from 1 to 10\n",
+    code: 1,
+  });
 });

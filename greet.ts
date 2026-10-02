@@ -49,6 +49,20 @@ export function parseTimes(times: string | null | undefined): number {
 }
 
 if (import.meta.main) {
-  const { name, shout } = parseArgs(process.argv.slice(2));
-  console.log(greet(name, { shout }));
+  const { name, shout, times } = parseArgs(process.argv.slice(2));
+  let count = 0;
+  let failed = false;
+  try {
+    count = parseTimes(times);
+  } catch (err) {
+    failed = true;
+    console.error(`error: ${(err as Error).message}`);
+    process.exitCode = 1;
+  }
+  if (!failed) {
+    const line = greet(name, { shout });
+    for (let i = 0; i < count; i++) {
+      console.log(line);
+    }
+  }
 }
