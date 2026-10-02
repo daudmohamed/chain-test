@@ -1,5 +1,5 @@
 import { test, expect } from "bun:test";
-import { greet, parseArgs } from "./greet.ts";
+import { greet, parseArgs, parseTimes } from "./greet.ts";
 
 test("greets the given name", () => {
   expect(greet("Alice")).toBe("Hello, Alice!");
@@ -44,6 +44,42 @@ test("parseArgs handles the flag alone and no arguments", () => {
 test("parseArgs ignores extra positionals and keeps other flags positional", () => {
   expect(parseArgs(["A", "B"]).name).toBe("A");
   expect(parseArgs(["--foo"])).toEqual({ name: "--foo", shout: false });
+});
+
+test("parseTimes returns each valid count", () => {
+  expect(parseTimes("1")).toBe(1);
+  expect(parseTimes("2")).toBe(2);
+  expect(parseTimes("5")).toBe(5);
+  expect(parseTimes("10")).toBe(10);
+});
+
+test("parseTimes defaults to 1 when times is undefined", () => {
+  expect(parseTimes(undefined)).toBe(1);
+});
+
+test("parseTimes accepts digit-prefixed forms within range", () => {
+  expect(parseTimes("07")).toBe(7);
+});
+
+test("parseTimes throws for a missing value (null)", () => {
+  expect(() => parseTimes(null)).toThrow("--times must be a whole number from 1 to 10");
+});
+
+test("parseTimes throws for 0", () => {
+  expect(() => parseTimes("0")).toThrow("--times must be a whole number from 1 to 10");
+});
+
+test("parseTimes throws for a negative", () => {
+  expect(() => parseTimes("-1")).toThrow("--times must be a whole number from 1 to 10");
+});
+
+test("parseTimes throws for 11", () => {
+  expect(() => parseTimes("11")).toThrow("--times must be a whole number from 1 to 10");
+});
+
+test("parseTimes throws for non-numeric strings", () => {
+  expect(() => parseTimes("abc")).toThrow("--times must be a whole number from 1 to 10");
+  expect(() => parseTimes("2.5")).toThrow("--times must be a whole number from 1 to 10");
 });
 
 async function run(args: string[]) {
