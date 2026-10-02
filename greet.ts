@@ -6,10 +6,36 @@ export function greet(name?: string, options: { shout?: boolean } = {}): string 
   return options.shout ? message.toUpperCase() : message;
 }
 
-export function parseArgs(argv: string[]): { name?: string; shout: boolean } {
-  const shout = argv.includes("--shout");
-  const rest = argv.filter((arg) => arg !== "--shout");
-  return { name: rest[0], shout };
+export function parseArgs(argv: string[]): { name?: string; shout: boolean; times?: string | null } {
+  const positionals: string[] = [];
+  let shout = false;
+  let sawTimes = false;
+  let times: string | null | undefined = undefined;
+
+  for (let i = 0; i < argv.length; i++) {
+    const arg = argv[i];
+    if (arg === "--shout") {
+      shout = true;
+    } else if (arg === "--times") {
+      sawTimes = true;
+      const next = argv[i + 1];
+      if (next === undefined) {
+        times = null;
+      } else {
+        times = next;
+        i++;
+      }
+    } else {
+      positionals.push(arg);
+    }
+  }
+
+  const result: { name?: string; shout: boolean; times?: string | null } = {
+    name: positionals[0],
+    shout,
+  };
+  if (sawTimes) result.times = times;
+  return result;
 }
 
 const TIMES_ERROR = "--times must be a whole number from 1 to 10";

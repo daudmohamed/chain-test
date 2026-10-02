@@ -46,6 +46,35 @@ test("parseArgs ignores extra positionals and keeps other flags positional", () 
   expect(parseArgs(["--foo"])).toEqual({ name: "--foo", shout: false });
 });
 
+test("parseArgs extracts --times value before the name", () => {
+  expect(parseArgs(["--times", "3", "Daud"])).toEqual({ name: "Daud", shout: false, times: "3" });
+});
+
+test("parseArgs extracts --times value after the name", () => {
+  expect(parseArgs(["Daud", "--times", "3"])).toEqual({ name: "Daud", shout: false, times: "3" });
+});
+
+test("parseArgs combines --times with --shout in any order", () => {
+  expect(parseArgs(["Daud", "--shout", "--times", "4"])).toEqual({ name: "Daud", shout: true, times: "4" });
+  expect(parseArgs(["Daud", "--times", "4", "--shout"])).toEqual({ name: "Daud", shout: true, times: "4" });
+});
+
+test("parseArgs yields null for a value-less --times", () => {
+  expect(parseArgs(["Daud", "--times"])).toEqual({ name: "Daud", shout: false, times: null });
+});
+
+test("parseArgs keeps the --times value out of the name", () => {
+  expect(parseArgs(["--times", "3"]).name).toBe(undefined);
+});
+
+test("parseArgs uses the last --times value when given twice", () => {
+  expect(parseArgs(["--times", "2", "--times", "5"]).times).toBe("5");
+});
+
+test("parseArgs treats the token after --times as its value even if it looks like a flag", () => {
+  expect(parseArgs(["--times", "--shout"]).times).toBe("--shout");
+});
+
 test("parseTimes returns each valid count", () => {
   expect(parseTimes("1")).toBe(1);
   expect(parseTimes("2")).toBe(2);
